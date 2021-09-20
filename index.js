@@ -1,9 +1,15 @@
-const { response, request } = require('express')
-
-express = require('express')
+const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+
+morgan.token('post', (req) => {
+    return JSON.stringify(req.body)
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post'))
+
 
 let persons = [
     {
@@ -60,7 +66,6 @@ app.post('/api/persons', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-    console.log(generatedId())
     res.json(persons)
 })
 
@@ -69,7 +74,6 @@ app.get('/api/persons/:id', (req, res) => {
     const person = persons.find(p => p.id === id)
     
     if (person) {
-        console.log('joo')
         res.json(person)
     } else {
         res.status(404).end()
@@ -95,6 +99,8 @@ app.get('/info', (req, res) => {
         </div>`
     )
 })
+
+
 
 const PORT = 3001
 app.listen(PORT, () => {
