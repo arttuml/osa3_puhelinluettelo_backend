@@ -24,34 +24,26 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({error: 'malformatted id'})
-    }   
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).send({error: error.message})
+    }
     next(error)   
 }
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
-    // const nameUniqueTest = Person.find(p => p.name.toLocaleLowerCase() === body.name.toLocaleLowerCase())
-
-    // if (!body.number || !body.name) {
-    //     return res.status(400).json({
-    //         error: 'content missing'
-    //     })
-    // }
-
-    // if (nameUniqueTest) {
-    //     return res.status(400).json({
-    //         error: 'name must be unique'
-    //     })
-    // }
 
     const person = new Person({
         name: body.name,
         number: body.number
     })
 
-    person.save().then(savedNote => {
-        res.json(savedNote)
+    person.save()
+    .then(savedPerson => savedPerson.toJSON())
+    .then(savedAndFormattedPerson => {
+        res.json(savedAndFormattedPerson)
     })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons', (req, res) => {
